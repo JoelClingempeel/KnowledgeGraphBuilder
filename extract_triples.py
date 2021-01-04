@@ -63,10 +63,6 @@ def find_nodes(tree, node_vals):
         return None
 
 
-# WARNING: Due to problems with running files on colab, this is not working.
-# Until I fix this, use the dictionary copied and pasted from Jupyter output.
-
-
 def irreg_verb_table(file_path):
     file = open(file_path)
     table = {}
@@ -110,10 +106,8 @@ def conjugate(verb, table, form):
                 return verb + 'ed'
 
 
-# CORE PART - used to actually construct triples from sentence trees
-# MOST IMPORTANT
-
-def find_adjective(np):  # TO-DO input may not be an NP - revise?!?!
+# Core Part - used to actually construct triples from sentence trees.
+def find_adjective(np):  # TODO Handle if input is not be an NP.
     adjectives = ['JJ', 'JR', 'JS']
     adj = find_nodes(np, adjectives)
     if adj is not None:
@@ -142,7 +136,7 @@ def find_verb(vp):
         return None
 
 
-def process_pp(pp):  # yay? MODIFIED
+def process_pp(pp):
     prep = find_nodes(pp, ['IN'])
     if prep:
         if len(prep.children) != 0:
@@ -152,7 +146,7 @@ def process_pp(pp):  # yay? MODIFIED
     return []
 
 
-def infinitive(vp):  # TODO misleading name since may include a following noun?!
+def infinitive(vp):
     s_node = None
     for child in vp.children:
         if child.val == 'S':
@@ -181,7 +175,6 @@ def assemble_triples(subj, verb, dobj, iobj, pp_list):
     for pp in pp_list:
         triples.append([subj, verb + '_' + pp[0], pp[1]])
     return triples
-    # return [subj, verb, dobj, iobj, pp_list]
 
 
 def find_objects(vp):
@@ -198,7 +191,7 @@ def find_objects(vp):
     iobj = None
     if len(objects) == 1:
         dobj = objects[0]  # subj + dobj
-    elif len(objects) > 1:  # Should never be > 2 I don't think
+    elif len(objects) > 1:  # Should never be > 2
         dobj = objects[1]  # subj + dobj + iobj
         iobj = objects[0]
     else:  # Infinitive as object?
@@ -206,7 +199,7 @@ def find_objects(vp):
     return [dobj, iobj, pp_list]
 
 
-def process_S_node(tree):  # TO-DO Consider splitting up into several functions.
+def process_S_node(tree):
     np = None
     vp = None
     adjp = None
@@ -221,7 +214,7 @@ def process_S_node(tree):  # TO-DO Consider splitting up into several functions.
         np = adjp
     subj = find_noun(np)
     verb = find_verb(vp)
-    if subj == None or verb == None:  # I can either both or neither are present.
+    if subj == None or verb == None:
         return []
     dobj, iobj, pp_list = find_objects(vp)
     return assemble_triples(subj, verb, dobj, iobj, pp_list)
@@ -249,12 +242,12 @@ def process_NP_node(tree):
 
 
 def process_tree(tree):  # Should never be given leaves to process
-    if len(tree.children) == 0 or type(tree.children[0]) is str:  # Bottom of recursion  yay?
+    if len(tree.children) == 0 or type(tree.children[0]) is str:  # Bottom of recursion
         return []
     triples = []
     if tree.val == 'S':
         triples += process_S_node(tree)
-    if tree.val == 'NP':  # NOTE: OMIT THIS AND NEXT LINE IF PROBLEMATIC
+    if tree.val == 'NP':
         triples += process_NP_node(tree)
     for subtree in tree.children:
         triples += process_tree(subtree)
@@ -319,4 +312,3 @@ def text_to_triples(text):
 def file_to_triples(input_file):
     return text_to_triples(input_file.read())
 
-# TODO add testing code
